@@ -5,7 +5,8 @@ import  Dialog  from 'primevue/dialog';
 import  InputText  from 'primevue/inputtext';
 import  Button  from 'primevue/button';
 import * as api from '../../helpers/api'
-
+const { visible } = defineProps(['visible']);
+const emits = defineEmits(['update:visible']);
 
 const tipoSangre = ref([
   { label: 'A', value: 'A' },
@@ -14,13 +15,14 @@ const tipoSangre = ref([
   { label: 'AB', value: 'AB' },
 ]);
 
-const { visible } = defineProps(['visible']);
-const emits = defineEmits(['update:visible']);
+
+
 const mostrarModalAgregar = ref(false);
 
 function cerrarModal() {
   emits('update:visible', false);
 }
+
 const campos = [
   { label: 'Nombre:', field: 'name', type: 'text' },
   { label: 'Apellido:', field: 'last_name', type: 'text' },
@@ -51,7 +53,36 @@ const campos = [
   { label: 'Notas:', field: 'notes', type: 'text' },
 ];
 const pacientes = ref([]);
-const pacienteSeleccionado = ref(null);
+const pacienteSeleccionado = ref({
+  name: '',
+      last_name:'',
+      address:'',
+      location:'',
+      province:'',
+      cell_phone:'',
+      mail:'',
+      birthdate:'',
+      blood_type:'',
+      rh:'',
+      coverage:'',
+      date:'',
+      cod_post:'',
+      nationalid:'',
+      telephone:'',
+      type_of_do:'',
+      no_of_doc:'',
+      sex:'',
+      est_civil:'',
+      occupation:'',
+      type_of_debt:'',
+      cod_deudorcod_plan:'',
+      nro_affilia:'',
+      primera_vi:'',
+      cuit:'',
+      condition:'',
+      notes:'',
+});
+
 
 
 
@@ -116,7 +147,7 @@ const sexo = ref(["M", "F"]);
 </script>
 <template>
   <div class="container-dialog">
-    <Dialog ref="agregarPacienteDialog" :visible="mostrarModalAgregar" @update:visible="cerrarModal" header="Agregar Paciente" class="p-dialog">
+    <Dialog ref="agregarPacienteDialog" :visible="visible" @update:visible="cerrarModal">
       <div class="row">
         <div class="column">
          
@@ -157,7 +188,7 @@ const sexo = ref(["M", "F"]);
 
       <div class="dialog-button">
         <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
+        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModal" />
       </div>
     </Dialog>
   </div>

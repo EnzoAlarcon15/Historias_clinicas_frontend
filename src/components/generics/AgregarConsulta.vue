@@ -1,14 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, defineProps, watch, watchEffect} from 'vue';
 import Dropdown from 'primevue/dropdown';
-import  Dialog  from 'primevue/dialog';
-import  InputText  from 'primevue/inputtext';
-import  Button  from 'primevue/button';
-import * as api from '../../helpers/api'
-
-
-const { visible } = defineProps(['visible']);
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import * as api from '../../helpers/api';
+const { visible, pacienteSeleccionado } = defineProps(['visible', 'pacienteSeleccionado']);
 const emits = defineEmits(['update:visible']);
+
 
 //falta enviar el id de paciente para el registro
 const campos = [
@@ -25,16 +24,21 @@ const campos = [
 
   
 const pacientes = ref([]);
-const pacienteSeleccionado = ref(null);
+
 
 const mostrarModalConsulta = ref(false);
 
 watchEffect(() => {
-  mostrarModalConsulta .value = props.visible;
+  mostrarModalConsulta.value = visible;
 });
+
 
 function cerrarModal() {
   emits('update:visible', false);
+}
+
+function abrirModal() {
+  emits('update:visible', true);
 }
 
 function abrirModalAgregar() {
@@ -53,21 +57,16 @@ function abrirModalAgregar() {
   }
 }
 
-function abrirModal() {
-  mostrarModalAgregar.value = true;
-}
 
-function cerrarModal(){
-    mostrarModalAgregar.value=false;
-}
-
-//falta enviar el id de paciente para el registro
+//envio id de paciente con index
 async function agregarConsulta() {
   try {
+    const index = pacientes.value.findIndex(e => e.id == pacienteSeleccionado.value.id)
     pacientes.value.push(pacienteSeleccionado.value);
     console.log(pacienteSeleccionado);
     
     const res = await api.createConsultation({
+      patient_id: pacienteSeleccionado.value.patient_id,
       date: pacienteSeleccionado.date,
       patient: pacienteSeleccionado.patient,
       gynecologist: pacienteSeleccionado.gynecologist,
@@ -82,6 +81,7 @@ async function agregarConsulta() {
     console.log(res, "res");
     abrirModal();
     pacienteSeleccionado.value = {
+      patient_id:'',
       date: '',
       patient: '',
       gynecologist: '',
