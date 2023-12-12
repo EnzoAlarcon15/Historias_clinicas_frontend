@@ -5,10 +5,40 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import * as api from '../../helpers/api';
-const { visible, pacienteSeleccionado, abrirModal } = defineProps(['visible', 'pacienteSeleccionado', 'abrirModal']);
-const agregarConsultaComponent = ref(null);
+const { idPaciente, visible } = defineProps(['idPaciente', 'visible']);
+const emit = defineEmits();
 
 
+
+const pacienteSeleccionado = ref({
+      name: '',
+      last_name:'',
+      address:'',
+      location:'',
+      province:'',
+      cell_phone:'',
+      mail:'',
+      birthdate:'',
+      blood_type:'',
+      rh:'',
+      coverage:'',
+      date:'',
+      cod_post:'',
+      nationalid:'',
+      telephone:'',
+      type_of_do:'',
+      no_of_doc:'',
+      sex:'',
+      est_civil:'',
+      occupation:'',
+      type_of_debt:'',
+      cod_deudorcod_plan:'',
+      nro_affilia:'',
+      primera_vi:'',
+      cuit:'',
+      condition:'',
+      notes:'',
+});
 const campos = [
   { label: 'Fecha:', field: 'date', type: 'date' },
   { label: 'Paciente:', field: 'patient', type: 'text' },
@@ -28,27 +58,6 @@ const mostrarModalConsulta = ref(false);
 watchEffect(() => {
   mostrarModalConsulta.value = visible;
 });
-
-const cerrarModal = () => {
-  emits('update:visible', false);
-};
-
-
-
-function abrirModalAgregar() {
-  console.log('Valor de pacienteSeleccionado en abrirModalAgregar:', pacienteSeleccionado.value);
-  if (agregarConsultaComponent.value) {
-    const abrirModalFunc = agregarConsultaComponent.value.abrirModal;
-    if (abrirModalFunc && typeof abrirModalFunc === 'function') {
-      abrirModalFunc();
-    } else {
-      console.error('Error: abrirModal no está definido como una función');
-    }
-  } else {
-    console.error('Error: no es una instancia válida');
-  }
-}
-
 
 //envio id de paciente con index
 async function agregarConsulta() {
@@ -92,12 +101,15 @@ async function agregarConsulta() {
     cerrarModal();
   }
 }
+const cerrarModal = () => {
+  emit('update:visible', false);
+};
 
 
 </script>
 <template>
   <div class="container-dialog">
-    <Dialog :visible="abrirModal" @update:visible="cerrarModal" header="Agregar Paciente" class="p-dialog">
+    <Dialog :visible="visible" @update:visible="cerrarModal" header="Nueva Consulta">
       <div class="row">
         <div class="column">
          
