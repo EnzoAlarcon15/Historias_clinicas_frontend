@@ -5,11 +5,10 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import * as api from '../../helpers/api';
-const { visible, pacienteSeleccionado } = defineProps(['visible', 'pacienteSeleccionado']);
-const emits = defineEmits(['update:visible']);
+const { visible, pacienteSeleccionado, abrirModal } = defineProps(['visible', 'pacienteSeleccionado', 'abrirModal']);
+const agregarConsultaComponent = ref(null);
 
 
-//falta enviar el id de paciente para el registro
 const campos = [
   { label: 'Fecha:', field: 'date', type: 'date' },
   { label: 'Paciente:', field: 'patient', type: 'text' },
@@ -24,33 +23,26 @@ const campos = [
 
   
 const pacientes = ref([]);
-
-
 const mostrarModalConsulta = ref(false);
 
 watchEffect(() => {
   mostrarModalConsulta.value = visible;
 });
 
-
-function cerrarModal() {
+const cerrarModal = () => {
   emits('update:visible', false);
-}
+};
 
-function abrirModal() {
-  emits('update:visible', true);
-}
+
 
 function abrirModalAgregar() {
   console.log('Valor de pacienteSeleccionado en abrirModalAgregar:', pacienteSeleccionado.value);
-  if (agregar.value) {
-    const abrirModalFunc = agregarConsultaComponent.value.abrirModalAgregar;
-    console.log(abrirModalAgregar.value);
-
+  if (agregarConsultaComponent.value) {
+    const abrirModalFunc = agregarConsultaComponent.value.abrirModal;
     if (abrirModalFunc && typeof abrirModalFunc === 'function') {
       abrirModalFunc();
     } else {
-      console.error('Error: abrirModalAgregar no está definido como una función');
+      console.error('Error: abrirModal no está definido como una función');
     }
   } else {
     console.error('Error: no es una instancia válida');
@@ -61,37 +53,40 @@ function abrirModalAgregar() {
 //envio id de paciente con index
 async function agregarConsulta() {
   try {
-    const index = pacientes.value.findIndex(e => e.id == pacienteSeleccionado.value.id)
-    pacientes.value.push(pacienteSeleccionado.value);
-    console.log(pacienteSeleccionado);
+    const index = pacientes.value.findIndex(e => e.id == pacienteSeleccionado.value.id);
     
-    const res = await api.createConsultation({
-      patient_id: pacienteSeleccionado.value.patient_id,
-      date: pacienteSeleccionado.date,
-      patient: pacienteSeleccionado.patient,
-      gynecologist: pacienteSeleccionado.gynecologist,
-      reason_for_consultation: pacienteSeleccionado.reason_for_consultation,
-      medical_history: pacienteSeleccionado.medical_history,
-      physical_examination: pacienteSeleccionado.physical_examination,
-      diagnosis: pacienteSeleccionado.diagnosis,
-      treatment: pacienteSeleccionado.treatment,
-      notes: pacienteSeleccionado.notes,
-    });
+    
+    if (pacienteSeleccionado.value && pacienteSeleccionado.value.id) {
+      const res = await api.createConsultation({
+        patient_id: pacienteSeleccionado.value.id, 
+        date: pacienteSeleccionado.date,
+        patient: pacienteSeleccionado.patient,
+        gynecologist: pacienteSeleccionado.gynecologist,
+        reason_for_consultation: pacienteSeleccionado.reason_for_consultation,
+        medical_history: pacienteSeleccionado.medical_history,
+        physical_examination: pacienteSeleccionado.physical_examination,
+        diagnosis: pacienteSeleccionado.diagnosis,
+        treatment: pacienteSeleccionado.treatment,
+        notes: pacienteSeleccionado.notes,
+      });
 
-    console.log(res, "res");
-    abrirModal();
-    pacienteSeleccionado.value = {
-      patient_id:'',
-      date: '',
-      patient: '',
-      gynecologist: '',
-      reason_for_consultation: '',
-      medical_history: '',
-      physical_examination: '',
-      diagnosis: '',
-      treatment: '',
-      notes: '',
-    };
+      console.log(res, "res");
+      abrirModal();
+      pacienteSeleccionado.value = {
+        patient_id:'',
+        date: '',
+        patient: '',
+        gynecologist: '',
+        reason_for_consultation: '',
+        medical_history: '',
+        physical_examination: '',
+        diagnosis: '',
+        treatment: '',
+        notes: '',
+      };
+    } else {
+      console.error('Error: pacienteSeleccionado.value o su propiedad "id" no está definido.');
+    }
   } catch (error) {
     console.log(error, "error en la petición");
     cerrarModal();
@@ -102,7 +97,7 @@ async function agregarConsulta() {
 </script>
 <template>
   <div class="container-dialog">
-    <Dialog :visible="abrirModalAgregar" @update:visible="cerrarModal" header="Agregar Paciente" class="p-dialog">
+    <Dialog :visible="abrirModal" @update:visible="cerrarModal" header="Agregar Paciente" class="p-dialog">
       <div class="row">
         <div class="column">
          
