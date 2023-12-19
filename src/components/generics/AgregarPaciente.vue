@@ -19,9 +19,9 @@ const tipoSangre = ref([
 
 const mostrarModalAgregar = ref(false);
 
-function cerrarModal() {
-  emits('update:visible', false);
-}
+const cerrarModal = () => {
+  emit('update:visible', false);
+};
 
 const campos = [
   { label: 'Nombre:', field: 'name', type: 'text' },
@@ -54,7 +54,7 @@ const campos = [
 ];
 const pacientes = ref([]);
 const pacienteSeleccionado = ref({
-  name: '',
+      name: '',
       last_name:'',
       address:'',
       location:'',

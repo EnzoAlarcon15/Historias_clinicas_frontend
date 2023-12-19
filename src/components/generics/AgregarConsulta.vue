@@ -5,40 +5,10 @@ import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import * as api from '../../helpers/api';
-const { idPaciente, visible } = defineProps(['idPaciente', 'visible']);
+const { pacienteSeleccionado, visible } = defineProps(['pacienteSeleccionado','visible']);
+
 const emit = defineEmits();
 
-
-
-const pacienteSeleccionado = ref({
-      name: '',
-      last_name:'',
-      address:'',
-      location:'',
-      province:'',
-      cell_phone:'',
-      mail:'',
-      birthdate:'',
-      blood_type:'',
-      rh:'',
-      coverage:'',
-      date:'',
-      cod_post:'',
-      nationalid:'',
-      telephone:'',
-      type_of_do:'',
-      no_of_doc:'',
-      sex:'',
-      est_civil:'',
-      occupation:'',
-      type_of_debt:'',
-      cod_deudorcod_plan:'',
-      nro_affilia:'',
-      primera_vi:'',
-      cuit:'',
-      condition:'',
-      notes:'',
-});
 const campos = [
   { label: 'Fecha:', field: 'date', type: 'date' },
   { label: 'Paciente:', field: 'patient', type: 'text' },
@@ -59,29 +29,37 @@ watchEffect(() => {
   mostrarModalConsulta.value = visible;
 });
 
-//envio id de paciente con index
+const NewConsultation = ref({
+        patient_id: pacienteSeleccionado.id || '',
+        date: '',
+        patient: pacienteSeleccionado.name,
+        gynecologist: '',
+        reason_for_consultation: '',
+        medical_history: '',
+        physical_examination: '',
+        diagnosis: '',
+        treatment: '',
+        notes: '',
+})
+
+
+
 async function agregarConsulta() {
-  try {
-    const index = pacientes.value.findIndex(e => e.id == pacienteSeleccionado.value.id);
-    
-    
-    if (pacienteSeleccionado.value && pacienteSeleccionado.value.id) {
+  try { 
+    if (pacienteSeleccionado && pacienteSeleccionado.id) {
       const res = await api.createConsultation({
-        patient_id: pacienteSeleccionado.value.id, 
-        date: pacienteSeleccionado.date,
-        patient: pacienteSeleccionado.patient,
-        gynecologist: pacienteSeleccionado.gynecologist,
-        reason_for_consultation: pacienteSeleccionado.reason_for_consultation,
-        medical_history: pacienteSeleccionado.medical_history,
-        physical_examination: pacienteSeleccionado.physical_examination,
-        diagnosis: pacienteSeleccionado.diagnosis,
-        treatment: pacienteSeleccionado.treatment,
-        notes: pacienteSeleccionado.notes,
+       patient_id:NewConsultation.value.patient_id,
+       date: NewConsultation.value.date,
+       patient: NewConsultation.value.patient,
+       gynecologist: NewConsultation.value.gynecologist,
+       reason_for_consultation: NewConsultation.value.reason_for_consultation,
+       medical_history: NewConsultation.value.medical_history,
+       physical_examination: NewConsultation,
       });
 
       console.log(res, "res");
       abrirModal();
-      pacienteSeleccionado.value = {
+      NewConsultation.value = {
         patient_id:'',
         date: '',
         patient: '',
@@ -92,9 +70,11 @@ async function agregarConsulta() {
         diagnosis: '',
         treatment: '',
         notes: '',
+
+        
       };
     } else {
-      console.error('Error: pacienteSeleccionado.value o su propiedad "id" no está definido.');
+      console.error('Error:NewConsultation.value o su propiedad "id" no está definido.');
     }
   } catch (error) {
     console.log(error, "error en la petición");
@@ -121,7 +101,7 @@ const cerrarModal = () => {
                 <Dropdown :options="tipoSangre" :value="pacienteSeleccionado[field.field]" @onChange="handleDropdownChange(field.field)" optionLabel="label" optionValue="value" class="p-inputtext" />
               </template>
               <template v-else>
-                <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+                <InputText :type="field.type" :modelValue="pacienteSeleccionado?.[field?.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
               </template>
             </div>
           </div>

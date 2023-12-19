@@ -23,17 +23,19 @@
           <Button icon="pi pi-pencil" class="p-button-text custom-icon" @click="abrirModalModificar(rowData.data)" />
           <Button icon="pi pi-trash" class="p-button-text custom-icon" @click="abrirModalEliminar(rowData.data)" />
           <Button icon="pi pi-angle-double-right" class="p-button-text custom-icon" @click="abrirModalConsulta(rowData)" />
+
+
          </template>
       </Column>
     </DataTable>
   </div>
 
 <!--Modal agregar paciente-->
-<AgregarPaciente :visible="mostrarModalAgregar" @update:visible="cerrarDialogAgregarPaciente" />
+<AgregarPaciente :visible="mostrarModalAgregar"  @update:visible="cerrarDialogAgregarPaciente"  />
 
 
 <!-- Modal Modificar Paciente -->
-<ModificarPaciente :visible="mostrarModalModificar" @update:visible="cerrarModalModificar"/>
+<ModificarPaciente :paciente="pacienteSeleccionado" :visible="mostrarModalModificar" @update:visible="cerrarModalModificar"/>
 
  <!-- Modal Eliminar Paciente -->
 <Dialog v-model="mostrarModalEliminar" header="Eliminar Paciente" :visible="mostrarModalEliminar" class="p-dialog">
@@ -111,14 +113,21 @@
     </div>
   </Dialog>
 
-<!--Moldal Agregar Consulta-->
-<AgregarConsulta v-model:visible="mostrarModalConsulta" :pacienteSeleccionado="pacienteSeleccionado" />
+
+<!-- table.vue -->
+<AgregarConsulta :pacienteSeleccionado="pacienteSeleccionado" :visible="mostrarModalConsulta" />
+
+
+
 
 
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineProps} from 'vue';
+import { ref, computed, onMounted, defineProps, defineEmits} from 'vue';
+const { rowData } = defineProps(['rowData']);
+const emit = defineEmits();
+const mostrarModalConsulta = ref(false);
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
@@ -131,23 +140,76 @@ import TableConsultationVue from '../components/TableConsultation.vue';
 import AgregarPaciente from '../components/generics/AgregarPaciente.vue';
 import ModificarPaciente from '../components/generics/ModificarPaciente.vue';
 import AgregarConsulta from '../components/generics/AgregarConsulta.vue';
-
 import { createRouter, createWebHistory } from 'vue-router';
 import { useRouter } from 'vue-router';
-
 import jsPDF from 'jspdf';
 
-
-const pacientes = ref([]);
-const consultas =ref([]);
 const mostrarModalAgregar = ref(false);
 const mostrarModalVer = ref(false);
 const mostrarModalModificar = ref(false);
 const mostrarModalEliminar = ref(false);
 const mostrarModal = ref(false)
 const busqueda = ref('')
-const pacienteId = ref('');
-const mostraModalconsulta=ref(false)
+const pacientes = ref([]);
+
+
+const pacienteSeleccionado = ref({
+      name: '',
+      last_name:'',
+      address:'',
+      location:'',
+      province:'',
+      cell_phone:'',
+      mail:'',
+      birthdate:'',
+      blood_type:'',
+      rh:'',
+      coverage:'',
+      date:'',
+      cod_post:'',
+      nationalid:'',
+      telephone:'',
+      type_of_do:'',
+      no_of_doc:'',
+      sex:'',
+      est_civil:'',
+      occupation:'',
+      type_of_debt:'',
+      cod_deudorcod_plan:'',
+      nro_affilia:'',
+      primera_vi:'',
+      cuit:'',
+      condition:'',
+      notes:'',
+});
+
+
+
+const NewConsultation = ref({
+        patient_id:'',
+        date: '',
+        patient: '',
+        gynecologist: '',
+        reason_for_consultation: '',
+        medical_history: '',
+        physical_examination: '',
+        diagnosis: '',
+        treatment: '',
+        notes: '',
+})
+const patient_id = pacienteSeleccionado.id;
+
+
+
+
+
+
+
+
+
+
+
+
 
 function abrirDialogAgregarPaciente() {
   mostrarModalAgregar.value = true;
@@ -157,46 +219,16 @@ function cerrarDialogAgregarPaciente() {
   mostrarModalAgregar.value = false;
 }
 
-const pacienteSeleccionado = ref({
-  name: '',
-  last_name:'',
-  address:'',
-  location:'',
-  province:'',
-  cell_phone:'',
-  mail:'',
-  birthdate:'',
-  blood_type:'',
-  rh:'',
-  coverage:'',
-  family_history:'',
-  personal_background:'',
-  date:'',
-  cod_post:'',
-  locality:'',
-  nationalid:'',
-  telephone:'',
-  type_of_do:'',
-  no_of_doc:'',
-  sex:'',
-  est_civil:'',
-  occupation:'',
-  type_of_debt:'',
-  cod_deudorcod_plan:'',
-  nro_affilia:'',
-  gavado:'',
-  primera_vi:'',
-  last_vis:'',
-  nro_de_vis:'',
-  cod_seguim:'',
-  geozona:'',
-  cuit:'',
-  posivapaci:'',
-  condition:'',
-  hcanterior:'',
-  notes:'',
-  nullflags:''
-});
+
+
+const actualizarMostrarModal = (newValue) => {
+  mostrarModalConsulta.value = newValue;
+};
+
+
+
+
+
 
 
 
@@ -428,11 +460,10 @@ function cerrarModalAgregar() {
 
 
 
-const mostrarModalConsulta = ref(false);
 
-function abrirModalConsulta() {
+const abrirModalConsulta = () => {
   mostrarModalConsulta.value = true;
-}
+};
 
 function abrirModalVer(paciente) {
   pacienteSeleccionado.value =paciente;
