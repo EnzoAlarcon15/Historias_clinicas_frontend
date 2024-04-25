@@ -25,46 +25,7 @@ function cerrarModal() {
 
 const pacientes = ref([]);
 
-const pacienteSeleccionado = ref({
-  name: '',
-  last_name:'',
-  address:'',
-  location:'',
-  province:'',
-  cell_phone:'',
-  mail:'',
-  birthdate:'',
-  blood_type:'',
-  rh:'',
-  coverage:'',
-  family_history:'',
-  personal_background:'',
-  date:'',
-  cod_post:'',
-  locality:'',
-  nationalid:'',
-  telephone:'',
-  type_of_do:'',
-  no_of_doc:'',
-  sex:'',
-  est_civil:'',
-  occupation:'',
-  type_of_debt:'',
-  cod_deudorcod_plan:'',
-  nro_affilia:'',
-  gavado:'',
-  primera_vi:'',
-  last_vis:'',
-  nro_de_vis:'',
-  cod_seguim:'',
-  geozona:'',
-  cuit:'',
-  posivapaci:'',
-  condition:'',
-  hcanterior:'',
-  notes:'',
-  nullflags:''
-});
+
 
 
 async function cargarDatosPaciente(id) {

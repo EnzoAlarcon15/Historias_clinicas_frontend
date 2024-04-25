@@ -2,27 +2,30 @@
   <div class="container">
     <span class="p-input-icon-left">
       <i class="pi pi-search" />
-      <InputText v-model="busqueda" @input="filtarPacientes" placeholder="Keyword Search" @click="searchPatients" />
+      <InputText v-model="globalFilterValue" @input="buscarTodo"  placeholder="Buscar" />
     </span>
     <button class="p-button p-button-rounded p-button-success" @click="abrirDialogAgregarPaciente">
       Agregar Paciente
     </button>
-    <DataTable :value="pacientes" :paginator="true" :rows="5" :emptyMessage="emptyMessage" class="table">
-      <Column field="name" header="Nombre"></Column>
-      <Column field="last_name" header="Apellido"></Column>
-      <Column field="dni" header="DNI">
+    <DataTable :paginator="true" :rows="5" :emptyMessage="emptyMessage" class="table" :value="filterdPacientes">
+      <Column field="name" header="Nombre" sortable ></Column>
+      <Column field="last_name" header="Apellido" sortable></Column>
+      <Column field="dni" header="DNI" sortable>
         <template #body="rowData">
           {{ rowData.data.no_of_doc ? rowData.data.no_of_doc : '-' }}
         </template>
       </Column>
-      <Column field="cell_phone" header="Teléfono"></Column>
-      <Column field="mail" header="Email"></Column>
+      <Column field="cell_phone" header="Teléfono" sortable></Column>
+      <Column field="mail" header="Email" sortable></Column>
       <Column header="Acciones">
         <template #body="rowData">
           <Button icon="pi pi-eye" class="p-button-text custom-icon" @click="abrirModalVer(rowData.data)" />
           <Button icon="pi pi-pencil" class="p-button-text custom-icon" @click="abrirModalModificar(rowData.data)" />
           <Button icon="pi pi-trash" class="p-button-text custom-icon" @click="abrirModalEliminar(rowData.data)" />
-          <Button icon="pi pi-angle-double-right" class="p-button-text custom-icon" @click="abrirModalConsulta(rowData)" />
+          <Button icon="pi pi-angle-double-right" class="p-button-text custom-icon" @click="abrirModalConsulta(rowData.data)" />
+
+
+
 
 
          </template>
@@ -31,7 +34,11 @@
   </div>
 
 <!--Modal agregar paciente-->
-<AgregarPaciente :visible="mostrarModalAgregar"  @update:visible="cerrarDialogAgregarPaciente"  />
+<AgregarPaciente :visible="mostrarModalAgregar" header="Nuevo Paciente" @update:visible="cerrarDialogAgregarPaciente" />
+
+
+<!-- modal agregar consulta -->
+<AgregarConsulta :pacienteSeleccionado="pacienteSeleccionado.id" header="Nueva Consulta" :visible="mostrarModalConsulta" @update:visible="CerrarModalAgregarConsulta"  />
 
 
 <!-- Modal Modificar Paciente -->
@@ -114,8 +121,7 @@
   </Dialog>
 
 
-<!-- table.vue -->
-<AgregarConsulta :pacienteSeleccionado="pacienteSeleccionado" :visible="mostrarModalConsulta" />
+
 
 
 
@@ -124,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, defineProps, defineEmits} from 'vue';
+import { ref, computed, onMounted, defineProps, defineEmits, watch} from 'vue';
 const { rowData } = defineProps(['rowData']);
 const emit = defineEmits();
 const mostrarModalConsulta = ref(false);
@@ -144,16 +150,61 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useRouter } from 'vue-router';
 import jsPDF from 'jspdf';
 
+const globalFilterValue = ref('')
 const mostrarModalAgregar = ref(false);
 const mostrarModalVer = ref(false);
 const mostrarModalModificar = ref(false);
 const mostrarModalEliminar = ref(false);
 const mostrarModal = ref(false)
-const busqueda = ref('')
 const pacientes = ref([]);
+const filterdPacientes = ref([])
+
+
+
+//cargar pacientes en la tabla
+async function loadPatientes() {
+  try {
+    const patients = await api.getPatients()
+      console.log("Pacientes cargardos:",patients)
+      pacientes.value = patients
+    
+  } catch (error) {
+    console.error("Error al cargar pacientes", error)
+    
+  }
+}
+
+
+//debe llamar a load loadPatientes para hacer el filtro de la tabla 
+const buscarTodo = async () => {
+  try {
+    console.log("Antes de cargar la tabla");
+    await loadPatientes();
+    console.log("Tabla cargada");
+
+    const searchTerm = globalFilterValue.value.trim().toLowerCase();
+    console.log("Busqueda terminada:", searchTerm);
+
+    if (searchTerm === '') {
+      filterdPacientes.value = [...pacientes.value];
+    } else {
+      filterdPacientes.value = pacientes.value.filter(paciente => {
+        for (const prop in paciente) {
+          if (paciente[prop] && paciente[prop].toString().toLowerCase().includes(searchTerm)) {
+            return true;
+          }
+        }
+        return false;
+      });
+    }
+  } catch (error) {
+    console.error("Error searching patients:", error);
+  }
+}
 
 
 const pacienteSeleccionado = ref({
+      id:'',
       name: '',
       last_name:'',
       address:'',
@@ -185,32 +236,6 @@ const pacienteSeleccionado = ref({
 
 
 
-const NewConsultation = ref({
-        patient_id:'',
-        date: '',
-        patient: '',
-        gynecologist: '',
-        reason_for_consultation: '',
-        medical_history: '',
-        physical_examination: '',
-        diagnosis: '',
-        treatment: '',
-        notes: '',
-})
-const patient_id = pacienteSeleccionado.id;
-
-
-
-
-
-
-
-
-
-
-
-
-
 function abrirDialogAgregarPaciente() {
   mostrarModalAgregar.value = true;
 }
@@ -221,38 +246,21 @@ function cerrarDialogAgregarPaciente() {
 
 
 
-const actualizarMostrarModal = (newValue) => {
-  mostrarModalConsulta.value = newValue;
+const CerrarModalAgregarConsulta =() => {
+  mostrarModalConsulta.value = false;
 };
 
-
-
-
-
-
-
-
+//monta los pacientes en la tabla
 onMounted(async () => {
   await loadPatientes();
+  buscarTodo()
+
 })
 
 
 
 
-
-async function loadPatientes() {
-  const patients = await api.getPatients()
-  console.log(patients)
-  pacientes.value = patients
-}
-
-
-
-
-
-
-
-
+//eliminar pacientes
 async function eliminarPaciente() {
   try { 
     console.log(pacienteSeleccionado.value)
@@ -321,36 +329,12 @@ async function eliminarPaciente() {
     cerrarModalEliminar();
   }
 }
+
+//mensaje
 const emptyMessage = computed(() => {
   return 'No se encontraron pacientes.';
 });
-async function searchPatients() {
-  try {
-    console.log(busqueda.value);
-    if (busqueda.value.length < 1) {
-      return await loadPatientes();
-    }
 
-    const res = await api.searchPatient({ data: busqueda.value });
-    pacientes.value = res.data;
-  } catch (error) {
-    console.log(error, "error en la petición");
-  }
-}
-
-async function filtarPacientes() {
-  try {
-    console.log(busqueda.value);
-    if (busqueda.value.length < 1) {
-      return await loadPatientes();
-    }
-
-    const res = await api.searchPatient({ data: busqueda.value });
-    pacientes.value = res.data;
-  } catch (error) {
-    console.log(error, "error en la petición");
-  }
-}
 
 
 
@@ -447,24 +431,11 @@ const shareWhatsApp = () => {
 //funciones de modales
 
 
-function abrilModalConsulta(){
-  pacienteSeleccionado.id=pacienteId
-  mostrarNuevaConsulta.value= false ;
-}
-function cerrarModalConsulta(){
-  mostrarModalConsulta.value= false;
-}
-function cerrarModalAgregar() {
-  mostrarModalAgregar.value = false;
-}
-
-
-
-
-const abrirModalConsulta = () => {
+const abrirModalConsulta = ( patient_id) => {
   mostrarModalConsulta.value = true;
+  patient_id.value =  patient_id;
+  provide(' patient_id',  patient_id);
 };
-
 function abrirModalVer(paciente) {
   pacienteSeleccionado.value =paciente;
   mostrarModalVer.value = true;

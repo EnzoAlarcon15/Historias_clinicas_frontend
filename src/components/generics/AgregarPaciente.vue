@@ -19,9 +19,10 @@ const tipoSangre = ref([
 
 const mostrarModalAgregar = ref(false);
 
-const cerrarModal = () => {
-  emit('update:visible', false);
-};
+function cerrarModalAgregar() {
+  emits('update:visible', false);
+}
+
 
 const campos = [
   { label: 'Nombre:', field: 'name', type: 'text' },
@@ -188,7 +189,7 @@ const sexo = ref(["M", "F"]);
 
       <div class="dialog-button">
         <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModal" />
+        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
       </div>
     </Dialog>
   </div>
@@ -206,18 +207,22 @@ const sexo = ref(["M", "F"]);
   }
 
   .container-dialog {
-    display: flex;
-    flex-direction: column;
-    width: 80%;
+    width: 100%;
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 0 20px; 
   }
 
   .row {
     display: flex;
+    flex-wrap: wrap; 
+    margin: 0 -10px; 
   }
 
   .column {
     flex: 1;
     padding: 0 10px;
+    margin-bottom: 20px; 
   }
 
   .input-container {
@@ -236,5 +241,13 @@ const sexo = ref(["M", "F"]);
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    
+    .column {
+      flex: 1 100%; 
+      padding: 0; 
+    }
   }
 </style>

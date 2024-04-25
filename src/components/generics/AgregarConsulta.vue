@@ -1,13 +1,16 @@
 <script setup>
-import { ref, computed, onMounted, defineProps, watch, watchEffect} from 'vue';
+import { ref, defineProps, defineEmits } from 'vue';
 import Dropdown from 'primevue/dropdown';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import * as api from '../../helpers/api';
-const { pacienteSeleccionado, visible } = defineProps(['pacienteSeleccionado','visible']);
 
+
+
+const props = defineProps(['pacienteSeleccionado', 'visible',]);
 const emit = defineEmits();
+
 
 const campos = [
   { label: 'Fecha:', field: 'date', type: 'date' },
@@ -20,89 +23,76 @@ const campos = [
   { label: 'Tratamiento:', field: 'treatment', type: 'text' },
   { label: 'Notas:', field: 'notes', type: 'text' },
 ];
+ 
 
-  
-const pacientes = ref([]);
-const mostrarModalConsulta = ref(false);
-
-watchEffect(() => {
-  mostrarModalConsulta.value = visible;
+ const NewConsultation = ref({
+  patientId:'',
+  date: '',
+  gynecologist: '',
+  reason_for_consultation: '',
+  medical_history: '',
+  physical_examination: '',
+  diagnosis: '',
+  treatment: '',
+  notes: '',
 });
 
-const NewConsultation = ref({
-        patient_id: pacienteSeleccionado.id || '',
-        date: '',
-        patient: pacienteSeleccionado.name,
-        gynecologist: '',
-        reason_for_consultation: '',
-        medical_history: '',
-        physical_examination: '',
-        diagnosis: '',
-        treatment: '',
-        notes: '',
-})
-
-
-
-async function agregarConsulta() {
-  try { 
-    if (pacienteSeleccionado && pacienteSeleccionado.id) {
-      const res = await api.createConsultation({
-       patient_id:NewConsultation.value.patient_id,
-       date: NewConsultation.value.date,
-       patient: NewConsultation.value.patient,
-       gynecologist: NewConsultation.value.gynecologist,
-       reason_for_consultation: NewConsultation.value.reason_for_consultation,
-       medical_history: NewConsultation.value.medical_history,
-       physical_examination: NewConsultation,
-      });
-
-      console.log(res, "res");
-      abrirModal();
-      NewConsultation.value = {
-        patient_id:'',
-        date: '',
-        patient: '',
-        gynecologist: '',
-        reason_for_consultation: '',
-        medical_history: '',
-        physical_examination: '',
-        diagnosis: '',
-        treatment: '',
-        notes: '',
-
-        
-      };
-    } else {
-      console.error('Error:NewConsultation.value o su propiedad "id" no está definido.');
+async function agregarConsulta(patientId) {
+  try {
+    if (!patientId) {
+      console.error('Error: El ID del paciente no está definido.');
+      return; 
     }
+
+    const res = await api.createConsultation({
+      patient_id: props.pacienteSeleccionado.id,
+      date: NewConsultation.value.date || '',
+      patient: NewConsultation.value.patient || '',
+      gynecologist: NewConsultation.value.gynecologist || '',
+      reason_for_consultation: NewConsultation.value.reason_for_consultation || '',
+      medical_history: NewConsultation.value.medical_history || '',
+      physical_examination: NewConsultation.value.physical_examination || '',
+    });
+    console.log(res, "res");
+    cerrarModal();
+    resetNewConsultation();
   } catch (error) {
-    console.log(error, "error en la petición");
+    console.error('Error al agregar la consulta:', error);
     cerrarModal();
   }
 }
-const cerrarModal = () => {
+
+
+function cerrarModal() {
   emit('update:visible', false);
-};
+}
 
-
+function resetNewConsultation() {
+  NewConsultation.value = {
+    patient_id: '',
+    date: '',
+    patient: '',
+    gynecologist: '',
+    reason_for_consultation: '',
+    medical_history: '',
+    physical_examination: '',
+    diagnosis: '',
+    treatment: '',
+    notes: '',
+  };
+}
 </script>
+
 <template>
   <div class="container-dialog">
     <Dialog :visible="visible" @update:visible="cerrarModal" header="Nueva Consulta">
       <div class="row">
         <div class="column">
-         
           <!-- Columna 1 -->
           <div v-for="field in campos.slice(0, Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
             <div>
               <label>{{ field.label }}</label>
-              <template v-if="field.field === 'blood_type'">
-                <Dropdown :options="tipoSangre" :value="pacienteSeleccionado[field.field]" @onChange="handleDropdownChange(field.field)" optionLabel="label" optionValue="value" class="p-inputtext" />
-              </template>
-              <template v-else>
-                <InputText :type="field.type" :modelValue="pacienteSeleccionado?.[field?.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
-              </template>
+              <InputText :type="field.type" :modelValue="NewConsultation[field.field]" @update:modelValue="val => NewConsultation[field.field] = val" class="p-inputtext" />
             </div>
           </div>
         </div>
@@ -112,7 +102,7 @@ const cerrarModal = () => {
           <div v-for="field in campos.slice(Math.ceil(campos.length / 3), 2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
             <div>
               <label>{{ field.label }}</label>
-              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+              <InputText :type="field.type" :modelValue="NewConsultation[field.field]" @update:modelValue="val => NewConsultation[field.field] = val" class="p-inputtext" />
             </div>
           </div>
         </div>
@@ -122,20 +112,20 @@ const cerrarModal = () => {
           <div v-for="field in campos.slice(2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
             <div>
               <label>{{ field.label }}</label>
-              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+              <InputText :type="field.type" :modelValue="NewConsultation[field.field]" @update:modelValue="val => NewConsultation[field.field] = val" class="p-inputtext" />
             </div>
           </div>
         </div>
       </div>
-
+     
       <div class="dialog-button">
         <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarConsulta" />
+
         <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModal" />
       </div>
     </Dialog>
   </div>
 </template>
-
 
 <style scoped>
   .p-dialog {
@@ -148,18 +138,22 @@ const cerrarModal = () => {
   }
 
   .container-dialog {
-    display: flex;
-    flex-direction: column;
-    width: 80%;
+    width: 100%;
+    max-width: 800px; 
+    margin: 0 auto; 
+    padding: 0 20px; 
   }
 
   .row {
     display: flex;
+    flex-wrap: wrap; 
+    margin: 0 -10px; 
   }
 
   .column {
     flex: 1;
     padding: 0 10px;
+    margin-bottom: 20px; 
   }
 
   .input-container {
@@ -178,5 +172,12 @@ const cerrarModal = () => {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    .column {
+      flex: 1 100%; 
+      padding: 0; 
+    }
   }
 </style>
