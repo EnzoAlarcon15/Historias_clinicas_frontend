@@ -188,15 +188,17 @@ const sexo = ref(["M", "F"]);
       </div>
 
       <div class="dialog-button">
-        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
+        <Button label="Guardar" class="p-button-redondeado p-button-success boton-guardar" @click="agregarPaciente" />
+        <Button label="Cancelar" severity="secondary" @click="cerrarModalAgregar" />
       </div>
+
     </Dialog>
   </div>
 </template>
 
 
 <style scoped>
+
   .p-dialog {
     width: 100%;
     max-width: none;
@@ -238,10 +240,15 @@ const sexo = ref(["M", "F"]);
   }
 
   .dialog-button {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-  }
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.boton-guardar {
+  margin-right: 10px; 
+}
+
 
   @media (max-width: 768px) {
     

@@ -120,7 +120,11 @@
     </div>
   </Dialog>
 
-
+ <!-- Diálogo de Notificación -->
+ <Dialog v-model:visible="mostrarDialogoNotificacion" header="Notificación" :modal="true" :closable="false">
+      <p>{{ mensaje }}</p>
+      <Button label="Cerrar" @click="mostrarDialogoNotificacion = false" />
+    </Dialog>
 
 
 
@@ -158,7 +162,13 @@ const mostrarModalEliminar = ref(false);
 const mostrarModal = ref(false)
 const pacientes = ref([]);
 const filterdPacientes = ref([])
+const mostrarDialogMensaje = ref()
+const mensaje = ref()
 
+function mostrarModalMensaje (mensaje){
+  mostrarDialogMensaje.value=mensaje
+  mostrarModalMensaje.vale = true
+}
 
 
 //cargar pacientes en la tabla
@@ -270,6 +280,7 @@ async function eliminarPaciente() {
       console.log("El ID del paciente seleccionado es undefined.");
       return;
     }
+    mostrarModalMensaje('El id del paciente es indefinido')
 
     const indice = pacientes.value.findIndex(p => p.id === pacienteId);
     if (indice !== -1) {
@@ -277,8 +288,10 @@ async function eliminarPaciente() {
     }
 
     const res = await api.deletePatient({ id: pacienteId })
+    mostrarModalMensaje('Se eliminó correctamente el paciente')
 
     console.log(res.data, "res");
+
 
     cerrarModalEliminar();
 
