@@ -62,9 +62,9 @@ export function createConsultation(data) {
   });
 }
 
-export function getConsultation(id) {
+export function getConsultation() {
   return request({
-    url: `consultations/${id}`,
+    url: `consultations`,
     method: "get",
   });
 }

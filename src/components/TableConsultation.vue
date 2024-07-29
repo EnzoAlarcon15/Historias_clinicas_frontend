@@ -79,4 +79,6 @@ onMounted(async () => {
 .table{
   margin-top: 30px;
 }
+
+
 </style>
