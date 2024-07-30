@@ -38,19 +38,20 @@
 
 
 <!-- modal agregar consulta -->
-<AgregarConsulta :pacienteSeleccionado="pacienteSeleccionado.id" header="Nueva Consulta" :visible="mostrarModalConsulta" @update:visible="CerrarModalAgregarConsulta"  />
+<AgregarConsulta :paciente="pacienteSeleccionado.id" header="Nueva Consulta" :visible="mostrarModalConsulta" @update:visible="CerrarModalAgregarConsulta"  />
 
 
 <!-- Modal Modificar Paciente -->
 <ModificarPaciente :paciente="pacienteSeleccionado" :visible="mostrarModalModificar" @update:visible="cerrarModalModificar"/>
 
  <!-- Modal Eliminar Paciente -->
-<Dialog v-model="mostrarModalEliminar" header="Eliminar Paciente" :visible="mostrarModalEliminar" class="p-dialog">
-      <p>¿Está seguro que desea eliminar el paciente?</p>
-
-      <Button label="Eliminar" class="p-button-rounded p-button-danger" @click="eliminarPaciente" />
-      <Button label="Cancelar" class="p-button-rounded" @click="cerrarModalEliminar" />
-</Dialog>
+ <Dialog v-model="mostrarModalEliminar" header="Eliminar Paciente" :visible="mostrarModalEliminar" class="p-dialog">
+    <p>¿Está seguro que desea eliminar el paciente?</p>
+    <div class="dialog-button">
+      <Button label="Cancelar" class="p-button-redondeado" @click="cerrarModalEliminar" />
+      <Button label="Eliminar" class="p-button-redondeado p-button-danger" @click="eliminarPaciente" />
+    </div>
+  </Dialog>
   
 <!-- Modal Ver Paciente -->
 <Dialog v-model="mostrarModalVer" header="Ver Paciente" :visible="mostrarModalVer" class="p-dialog" style="width: 800px;">
@@ -431,13 +432,13 @@ const shareWhatsApp = () => {
 //funciones de modales
 
 
-const abrirModalConsulta = ( patient_id) => {
+const abrirModalConsulta = (paciente) => {
+  console.log("paciente solo",paciente.id)
   mostrarModalConsulta.value = true;
-  patient_id.value =  patient_id;
-  provide(' patient_id',  patient_id);
+  paciente.value.id  
 };
-function abrirModalVer(paciente) {
-  pacienteSeleccionado.value =paciente;
+function abrirModalVer(pacientes) {
+  pacienteSeleccionado.value =pacientes;
   mostrarModalVer.value = true;
 }
 
@@ -486,8 +487,13 @@ function cerrarModalEliminar() {
 }
 
 .dialog-button {
-  margin-top: 10px;
   text-align: right;
+  margin-top: 20px; 
+  
+}
+
+.dialog-button .p-button {
+  margin-left: 10px; 
 }
 
 .dialog-button .p-button {

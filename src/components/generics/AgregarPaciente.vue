@@ -148,7 +148,7 @@ const sexo = ref(["M", "F"]);
 </script>
 <template>
   <div class="container-dialog">
-    <Dialog ref="agregarPacienteDialog" :visible="visible" @update:visible="cerrarModal">
+    <Dialog ref="agregarPacienteDialog" :visible.sync="visible" @update:visible="cerrarModal" style="width: 90%;">
       <div class="row">
         <div class="column">
          
@@ -188,9 +188,9 @@ const sexo = ref(["M", "F"]);
       </div>
 
       <div class="dialog-button">
-        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
-      </div>
+    <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
+    <Button label="Cancelar" class="p-button-redondeado" severity="secondary" @click="cerrarModalAgregar" />
+  </div>
     </Dialog>
   </div>
 </template>
@@ -242,6 +242,13 @@ const sexo = ref(["M", "F"]);
     display: flex;
     justify-content: flex-end;
   }
+  .dialog-button {
+  text-align: right;
+}
+
+.dialog-button .p-button {
+  margin-left: 10px; 
+}
 
   @media (max-width: 768px) {
     

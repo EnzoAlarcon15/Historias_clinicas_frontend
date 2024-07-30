@@ -8,7 +8,7 @@ import * as api from '../../helpers/api';
 
 
 
-const props = defineProps(['pacienteSeleccionado', 'visible',]);
+const props = defineProps(['pacienteSeleccionado', 'visible', 'paciente']);
 const emit = defineEmits();
 
 
@@ -26,7 +26,7 @@ const campos = [
  
 
  const NewConsultation = ref({
-  patientId:'',
+  patient_id:props.paciente,
   date: '',
   gynecologist: '',
   reason_for_consultation: '',
@@ -37,15 +37,14 @@ const campos = [
   notes: '',
 });
 
-async function agregarConsulta(patientId) {
+async function agregarConsulta(patient_id) {
   try {
-    if (!patientId) {
+    if (!patient_id) {
       console.error('Error: El ID del paciente no está definido.');
       return; 
     }
-
     const res = await api.createConsultation({
-      patient_id: props.pacienteSeleccionado.id,
+      patient_id: NewConsultation.patient_id,
       date: NewConsultation.value.date || '',
       patient: NewConsultation.value.patient || '',
       gynecologist: NewConsultation.value.gynecologist || '',
@@ -53,12 +52,12 @@ async function agregarConsulta(patientId) {
       medical_history: NewConsultation.value.medical_history || '',
       physical_examination: NewConsultation.value.physical_examination || '',
     });
-    console.log(res, "res");
+    console.log("campos de respuestas",res );
     cerrarModal();
     resetNewConsultation();
   } catch (error) {
     console.error('Error al agregar la consulta:', error);
-    cerrarModal();
+    
   }
 }
 
@@ -120,8 +119,7 @@ function resetNewConsultation() {
      
       <div class="dialog-button">
         <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarConsulta" />
-
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModal" />
+       <Button label="Cancelar" class="p-button-redondeado" severity="secondary" @click="cerrarModal" />
       </div>
     </Dialog>
   </div>
@@ -172,7 +170,13 @@ function resetNewConsultation() {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+    text-align: right;
+    
   }
+
+  .dialog-button .p-button {
+  margin-left: 10px; 
+}
 
   @media (max-width: 768px) {
     .column {
