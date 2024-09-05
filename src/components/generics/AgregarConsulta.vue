@@ -10,7 +10,8 @@ import * as api from '../../helpers/api';
 
 const props = defineProps(['pacienteSeleccionado', 'visible', 'paciente']);
 const emit = defineEmits();
-
+console.log(props.paciente,"datos del paciente consulta")
+const dialog_msg_visble = ref(false);
 
 const campos = [
   { label: 'Fecha:', field: 'date', type: 'date' },
@@ -26,7 +27,7 @@ const campos = [
  
 
  const NewConsultation = ref({
-  patient_id:props.paciente,
+  patient_id:props.paciente.id,
   date: '',
   gynecologist: '',
   reason_for_consultation: '',
@@ -37,6 +38,7 @@ const campos = [
   notes: '',
 });
 
+
 async function agregarConsulta(patient_id) {
   try {
     if (!patient_id) {
@@ -44,7 +46,7 @@ async function agregarConsulta(patient_id) {
       return; 
     }
     const res = await api.createConsultation({
-      patient_id: NewConsultation.patient_id,
+      patient_id:patient_id,
       date: NewConsultation.value.date || '',
       patient: NewConsultation.value.patient || '',
       gynecologist: NewConsultation.value.gynecologist || '',
@@ -55,6 +57,7 @@ async function agregarConsulta(patient_id) {
     console.log("campos de respuestas",res );
     cerrarModal();
     resetNewConsultation();
+    set_dialog("Paciente creado: " + res.msg);
   } catch (error) {
     console.error('Error al agregar la consulta:', error);
     
@@ -83,7 +86,9 @@ function resetNewConsultation() {
 </script>
 
 <template>
+  
   <div class="container-dialog">
+    
     <Dialog :visible="visible" @update:visible="cerrarModal" header="Nueva Consulta">
       <div class="row">
         <div class="column">
@@ -118,11 +123,31 @@ function resetNewConsultation() {
       </div>
      
       <div class="dialog-button">
-        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarConsulta" />
+        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="()=>agregarConsulta(NewConsultation.value.patient_id)" />
        <Button label="Cancelar" class="p-button-redondeado" severity="secondary" @click="cerrarModal" />
       </div>
     </Dialog>
   </div>
+
+  <!-- Diálogo de mensajes -->
+  <Dialog
+      :dismissableMask="true"
+      v-model:visible="dialog_msg_visble"
+      :draggable="true"
+      modal
+      :style="{ width: '50rem' }"
+    >
+      <div style="text-align: center">
+        <p class="m-0">{{ dialog_msg_text }}</p>
+      </div>
+      <template #footer>
+        <Button
+          label="Ok"
+          autofocus
+          @click="dialog_msg_visble = false"
+        />
+      </template>
+    </Dialog>
 </template>
 
 <style scoped>

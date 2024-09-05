@@ -1,13 +1,28 @@
 <template>
-  <div class="container">
-    <span class="p-input-icon-left">
-      <i class="pi pi-search" />
-      <InputText v-model="globalFilterValue" @input="buscarTodo"  placeholder="Buscar" />
-    </span>
-    <button class="p-button p-button-rounded p-button-success" @click="abrirDialogAgregarPaciente">
-      Agregar Paciente
-    </button>
-    <DataTable :paginator="true" :rows="5" :emptyMessage="emptyMessage" class="table" :value="filterdPacientes">
+ <div class="container">
+    <Spinner :isActive="isActive"></Spinner>
+    <DataTable 
+      :paginator="true" 
+      :rows="5" 
+      :emptyMessage="emptyMessage"
+      class="table" 
+      :value="filterdPacientes" 
+      selectionMode="single"
+    >
+      <!-- Header de la Tabla con el Input de Búsqueda y el Botón Agregar -->
+      <template #header>
+        <div class="header-content">
+          <span class="p-input-icon-left">
+            <i class="pi pi-search" />
+            <InputText v-model="globalFilterValue" @input="buscarTodo" placeholder="Buscar" />
+          </span>
+          <Button class="btn-success-custom" @click="abrirDialogAgregarPaciente">
+            Agregar Paciente
+          </Button>
+        </div>
+      </template>
+
+      <!-- Definición de Columnas -->
       <Column field="name" header="Nombre" sortable ></Column>
       <Column field="last_name" header="Apellido" sortable></Column>
       <Column field="dni" header="DNI" sortable>
@@ -17,18 +32,15 @@
       </Column>
       <Column field="cell_phone" header="Teléfono" sortable></Column>
       <Column field="mail" header="Email" sortable></Column>
+
+      <!-- Columna de Acciones -->
       <Column header="Acciones">
         <template #body="rowData">
           <Button icon="pi pi-eye" class="p-button-text custom-icon" @click="abrirModalVer(rowData.data)" />
           <Button icon="pi pi-pencil" class="p-button-text custom-icon" @click="abrirModalModificar(rowData.data)" />
           <Button icon="pi pi-trash" class="p-button-text custom-icon" @click="abrirModalEliminar(rowData.data)" />
           <Button icon="pi pi-angle-double-right" class="p-button-text custom-icon" @click="abrirModalConsulta(rowData.data)" />
-
-
-
-
-
-         </template>
+        </template>
       </Column>
     </DataTable>
   </div>
@@ -38,7 +50,7 @@
 
 
 <!-- modal agregar consulta -->
-<AgregarConsulta :paciente="pacienteSeleccionado.id" header="Nueva Consulta" :visible="mostrarModalConsulta" @update:visible="CerrarModalAgregarConsulta"  />
+<AgregarConsulta :paciente="pacienteSeleccionado" header="Nueva Consulta" :visible="mostrarModalConsulta" @update:visible="CerrarModalAgregarConsulta"   />
 
 
 <!-- Modal Modificar Paciente -->
@@ -155,6 +167,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useRouter } from 'vue-router';
 import jsPDF from 'jspdf';
 
+
 const globalFilterValue = ref('')
 const mostrarModalAgregar = ref(false);
 const mostrarModalVer = ref(false);
@@ -267,9 +280,6 @@ onMounted(async () => {
   buscarTodo()
 
 })
-
-
-
 
 //eliminar pacientes
 async function eliminarPaciente() {
@@ -444,12 +454,13 @@ const shareWhatsApp = () => {
 
 //funciones de modales
 
-
 const abrirModalConsulta = (paciente) => {
   console.log("paciente solo",paciente.id)
   mostrarModalConsulta.value = true;
-  paciente.value.id  
+  pacienteSeleccionado.value = paciente
 };
+
+
 function abrirModalVer(pacientes) {
   pacienteSeleccionado.value =pacientes;
   mostrarModalVer.value = true;
@@ -481,14 +492,25 @@ function cerrarModalEliminar() {
 
 
 </script>
-
 <style scoped>
+.btn-success-custom {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.btn-success-custom:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
 .container {
-  max-width:100%;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
- 
- 
 }
 
 .p-inputtext {
@@ -500,64 +522,32 @@ function cerrarModalEliminar() {
 }
 
 .dialog-button {
+  margin-top: 10px;
   text-align: right;
-  margin-top: 20px; 
-  
 }
 
-.dialog-button .p-button {
-  margin-left: 10px; 
+.p-dialog {
+  padding: 15px;
 }
 
 .dialog-button .p-button {
   margin-left: 10px;
-  min-width: 120px; 
+  min-width: 120px;
 }
-
-
 
 .table {
   margin-top: 30px;
-  padding: 8px;
-  text-align: left;
-  border: 5px solid #dfe0df;
-
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
 }
 
-
-
-label {
-  font-weight: bold;
-  color: rgb(47, 47, 248);
+.p-datatable-thead > tr > th,
+.p-datatable-tbody > tr > td {
+  padding: 8px 12px;
 }
 
 .p-input-icon-left {
   margin-right: 10px;
 }
-.custom-icon {
-  color: blue; 
-}
-
-
-.container-dialog {
-  display: grid;
-  grid-template-columns: 25% 50% 25%;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-  width: 80%;
-  margin: 0 auto;
-}
-
-
-@media screen and (min-width: 235px) {
-  
-}
-@media (max-width: 768px) {
-  .container-dialog {
-    grid-template-columns: 1fr;
-  }
-}
-
-
 </style>

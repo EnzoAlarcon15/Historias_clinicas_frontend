@@ -1,3 +1,72 @@
+
+<template>
+  <div class="container-dialog">
+    <Dialog ref="agregarPacienteDialog" :visible.sync="visible" @update:visible="cerrarModal" style="width: 90%;">
+      <div class="row">
+        <div class="column">
+         
+          <!-- Columna 1 -->
+          <div v-for="field in campos.slice(0, Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
+            <div>
+              <label>{{ field.label }}</label>
+              <template v-if="field.field === 'blood_type'">
+                <Dropdown :options="tipoSangre" :value="pacienteSeleccionado[field.field]" @onChange="handleDropdownChange(field.field)" optionLabel="label" optionValue="value" class="p-inputtext" />
+              </template>
+              <template v-else>
+                <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <!-- Columna 2 -->
+          <div v-for="field in campos.slice(Math.ceil(campos.length / 3), 2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
+            <div>
+              <label>{{ field.label }}</label>
+              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+            </div>
+          </div>
+        </div>
+
+        <div class="column">
+          <!-- Columna 3 -->
+          <div v-for="field in campos.slice(2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
+            <div>
+              <label>{{ field.label }}</label>
+              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-button">
+        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
+        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
+      </div>
+    </Dialog>
+  </div>
+
+  <!-- Diálogo de mensajes -->
+  <Dialog
+      :dismissableMask="true"
+      v-model:visible="dialog_msg_visble"
+      :draggable="true"
+      modal
+      :style="{ width: '50rem' }"
+    >
+      <div style="text-align: center">
+        <p class="m-0">{{ dialog_msg_text }}</p>
+      </div>
+      <template #footer>
+        <Button
+          label="Ok"
+          autofocus
+          @click="dialog_msg_visble = false"
+        />
+      </template>
+    </Dialog>
+</template>
 <script setup>
 import { ref, computed, onMounted, defineProps, watch, watchEffect} from 'vue';
 import Dropdown from 'primevue/dropdown';
@@ -15,7 +84,8 @@ const tipoSangre = ref([
   { label: 'AB', value: 'AB' },
 ]);
 
-
+const dialog_msg_visble = ref(false);
+const dialog_msg_text = ref("");
 
 const mostrarModalAgregar = ref(false);
 
@@ -85,6 +155,10 @@ const pacienteSeleccionado = ref({
 });
 
 
+const set_dialog = (texto) => {
+  dialog_msg_text.value = texto;
+  dialog_msg_visble.value = true;
+};
 
 
 watchEffect(() => {
@@ -99,11 +173,13 @@ function abrirModalAgregar() {
 
 async function agregarPaciente() {
   try {
-    pacientes.value.push(pacienteSeleccionado.value);
-    console.log(pacienteSeleccionado);
+    for (const key in pacienteSeleccionado.value) {
+      if (!pacienteSeleccionado.value[key]) {
+        pacienteSeleccionado.value[key] = "";
+      }
+    }
     const res = await api.createPatients(pacienteSeleccionado.value);
     console.log(res, "res");
-    abrirModal();
     pacienteSeleccionado.value = {
       name: '',
       last_name:'',
@@ -133,9 +209,11 @@ async function agregarPaciente() {
       condition:'',
       notes:'',
     };
+    cerrarModalAgregar();
+    set_dialog("Paciente creado: " + res.status);
   } catch (error) {
     console.log(error, "error en la petición");
-    cerrarModal();
+    set_dialog("Paciente error: " + error.status);
   }
 }
 
@@ -146,55 +224,6 @@ const sexo = ref(["M", "F"]);
 
 
 </script>
-<template>
-  <div class="container-dialog">
-    <Dialog ref="agregarPacienteDialog" :visible.sync="visible" @update:visible="cerrarModal" style="width: 90%;">
-      <div class="row">
-        <div class="column">
-         
-          <!-- Columna 1 -->
-          <div v-for="field in campos.slice(0, Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
-            <div>
-              <label>{{ field.label }}</label>
-              <template v-if="field.field === 'blood_type'">
-                <Dropdown :options="tipoSangre" :value="pacienteSeleccionado[field.field]" @onChange="handleDropdownChange(field.field)" optionLabel="label" optionValue="value" class="p-inputtext" />
-              </template>
-              <template v-else>
-                <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
-              </template>
-            </div>
-          </div>
-        </div>
-
-        <div class="column">
-          <!-- Columna 2 -->
-          <div v-for="field in campos.slice(Math.ceil(campos.length / 3), 2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
-            <div>
-              <label>{{ field.label }}</label>
-              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
-            </div>
-          </div>
-        </div>
-
-        <div class="column">
-          <!-- Columna 3 -->
-          <div v-for="field in campos.slice(2 * Math.ceil(campos.length / 3))" :key="field.field" class="input-container">
-            <div>
-              <label>{{ field.label }}</label>
-              <InputText :type="field.type" :modelValue="pacienteSeleccionado[field.field]" @update:modelValue="val => pacienteSeleccionado[field.field] = val" class="p-inputtext" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="dialog-button">
-        <Button label="Guardar" class="p-button-redondeado p-button-success" @click="agregarPaciente" />
-        <Button label="Cancelar" class="p-button-rounded p-button-danger" @click="cerrarModalAgregar" />
-      </div>
-    </Dialog>
-  </div>
-</template>
-
 
 <style scoped>
 
